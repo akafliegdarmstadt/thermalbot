@@ -56,8 +56,8 @@ class Simulation:
 
     def _observe(self):
         μ = self.state[-2]
-        E = self.state[2] - self.laststate[2] # Hight difference??
-        return 
+        E_dot = self.state[2] - self.laststate[2] # Hight difference??
+        return E_dot, μ
 
     def _reward(self):
         E = self.state[2] - self.laststate[2] # Hight difference??
