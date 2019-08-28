@@ -13,7 +13,7 @@ class RandomAgent:
         - 2: Increase bank angle by five degrees."""
         return random.choice([0,1,2])
 
-    def update(self, observation, action, reward):
+    def update(self, observation, action, reward, nextobservation):
         """Does nothing, because this model doesn't learn."""
         pass
 
