@@ -1,7 +1,19 @@
 import numpy as np
 
 
+# 
 g = 9.81
+# air density
+ρ = 1.225
+# airplane mass
+m = 0.5
+# wing area
+S = 0.1
+
+# lilienthal polar constants c0+c_l*c2
+c0 = 0.06
+c2 = 0.04
+
 
 
 class Simulation:
@@ -9,18 +21,18 @@ class Simulation:
     """
 
     @classmethod
-    def generate_state(x, y, z, μ):
+    def generate_state(x, y, z, μ, φ):
         """Pack state variables into state vector
         """
-        return np.array([x, y, z, μ])
+        return np.array([x, y, z, μ, φ])
 
-    def __init__(self, initialstate, v=15.0, μstep=10, max_iterations=1000):
+    def __init__(self, initialstate, μstep=np.pi/18, dt=0.01, max_iterations=1000):
         self.allstates = np.empty((len(initialstate, max_iterations+1)))
         self.allstates[0, :] = initialstate
         self.iteration = 0
         self.max_iterations = max_iterations
-        self.μstep = 10
-        self.v = v
+        self.μstep = μstep
+        self.dt = dt
 
     @property
     def laststate(self):
@@ -60,7 +72,7 @@ class Simulation:
         x, y, z, μ, φ = self.laststate
 
         # calculate thermal velocity
-        w = thermal(x, y, z)
+        w = simple_thermal(x, y, z)
 
         # 
         if action == 0:
@@ -70,9 +82,18 @@ class Simulation:
         else:
             μ_new = μ + self.μstep
 
-        # TODO: calculate new position and new heading
-        # self.state = ...
-        r = self.v**2 / (g*np.tan(np.deg2rad(μ_new)))
+        v = 10
+        r = v**2 / (g*np.tan(μ_new))
+        l = v * self.dt
+
+        z_new = z - 0.5 * ρ * v**2 * drag(v, μ) * S * l / (m*g) + w*dt
+
+        x_new = x + l * np.cos(μ)
+        y_new = y + l * np.sin(μ)
+
+        φ_new = φ + l/r
+
+        self.state = x_new, y_new, z_new, μ_new, φ_new
         
 
     def _observe(self):
@@ -86,9 +107,14 @@ class Simulation:
     
     def render(self):
         """Render Simulation state - not implemented yet"""
-
         pass
 
+
+def simple_thermal(x, y, z, *args, **kwargs):
+    if np.sqrt(x**2 + y**2) < 10:
+        return 1.0
+    else:
+        return 0.0
 
 def thermal(x, y, z, thermal_pos=[0.0, 0.0], z_i=1213, w_star=1.97):
     """Calculate thermal following Allen 2006"""
@@ -124,3 +150,11 @@ def _get_ks(rr):
                    [0.6189, 42.797, 0.7157, 0.0001]])
 
     return interp1d(rrs, ks, kind='nearest', axis=0)(rr)
+
+
+def drag(v, μ):
+    return c0 + c2 * (2*m*g)/(ρ*S*np.cos(μ))
+
+
+def drag_differential(v, μ):
+    return c0 - 4 * c2 * ((2*m*g)/(ρ*S*np.cos(μ)))**2 / v**5
