@@ -7,17 +7,21 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colors as colors
 import numpy as np
 
+def calc_reward(state, nextstate):
+    return state[7]*2 - 1
+
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([0, 0, 1000, 0, 0])
+    env = simulation.Simulation([0, 0, 1000, 0, 0], dt=0.1)
     totalreward = 0
 
     action = 1
-    observation, reward, done = env.step(action)
+    observation, done = env.step(action)
     observations = [env.state]
 
-    for _ in range(1000):
+    for _ in range(300):
         action = agent.get_action(observation)
-        nextobservation, reward, done = env.step(action)
+        nextobservation, done = env.step(action)
+        reward = calc_reward(observation, nextobservation)
 
         totalreward += reward
 
@@ -35,10 +39,10 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def main():
-    aagent = agent.RandomAgent()
+    aagent = agent.TableAgent()
 
     rewards = []
-    numepochs = 10
+    numepochs = 1000
     
     for epoch in range(1,numepochs+1):
         print(f"Epoch {epoch} / {numepochs}")

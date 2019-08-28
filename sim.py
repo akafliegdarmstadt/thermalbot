@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 
 # 
@@ -34,6 +35,13 @@ class Simulation:
         self.μstep = μstep
         self.dt = dt
 
+        self.v = 10
+        self.upper_bounds = [5000, 5000, 2000, np.pi/2, np.pi]
+        self.lower_bounds = [-5000, -5000, 0, -np.pi/2, -np.pi]
+        self.diff_upper_bounds = [self.v, self.v, self.v, μstep/dt, g*np.tan(μstep)*dt/self.v**2]
+        self.diff_lower_bounds = -np.array(self.diff_upper_bounds)
+
+
     @property
     def laststate(self):
         if self.iteration>0:
@@ -49,6 +57,16 @@ class Simulation:
     def state(self, newstate):
         self.allstates[self.iteration] = newstate
 
+    @property
+    def full_state(self):
+        norm_state = [np.interp(statevar, [self.lower_bounds[i], self.upper_bounds[i]], [0, 1]) for i, statevar in enumerate(self.state)]
+        
+        dstate = (self.state-self.laststate)/self.dt
+
+        norm_dstate = [np.interp(statevar, [self.diff_lower_bounds[i], self.diff_upper_bounds[i]], [0, 1]) for i, statevar in enumerate(dstate)]
+
+        return norm_state + norm_dstate
+
     def step(self, action:int):
         """Do simulation step taking agent's action into account.
 
@@ -61,7 +79,7 @@ class Simulation:
 
         done = self.iteration >= self.max_iterations
 
-        return  self._observe(), self._reward(), done
+        return self.full_state, done
 
     def _do_step(self, action:int):
         
@@ -82,16 +100,14 @@ class Simulation:
         else:
             μ_new = μ + self.μstep
 
-        v = 10
-        
+        v = self.v 
 
         l = v * self.dt
 
         c_d = 0.03
 
         z_new = z + w*self.dt - 0.5 * ρ * v**2 * c_d * S * l / (m*g)
-        #print(drag(v, μ))
-
+    
         x_new = x + l * np.cos(μ)
         y_new = y + l * np.sin(μ)
 
@@ -101,23 +117,8 @@ class Simulation:
         else:
             φ_new = φ
 
-
         self.state = x_new, y_new, z_new, μ_new, φ_new
-        
-
-    def _observe(self):
-        μ = self.state[-2]
-        E_dot = self.state[2] - self.laststate[2] # Hight difference??
-        return E_dot, μ
-
-    def _reward(self):
-        E = self.state[2] - self.laststate[2] # Hight difference??
-        return E
     
-    def render(self):
-        """Render Simulation state - not implemented yet"""
-        pass
-
 
 def simple_thermal(x, y, z, *args, **kwargs):
     if np.sqrt(x**2 + y**2) < 20:
