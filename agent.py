@@ -32,7 +32,7 @@ class TableAgent:
         dte, bankangle = observation
 
         # Discretize dte
-        dte = 0 if dte < -self.deadzone else
+        dte = 0 if dte < -self.deadzone else \
             2 if dte > self.deadzone else 1
 
         bankangle = int(bankangle/5 + 9)
@@ -64,6 +64,6 @@ class TableAgent:
         learned = reward + self.discount * (
             np.max(self.policy[ndte, nbankangle]))
 
-        self.policy[dte, bankangle, action] =
-            (1-self.learning_rate)*oldq +
+        self.policy[dte, bankangle, action] = \
+            (1-self.learning_rate)*oldq + \
             self.learning_rate*learned

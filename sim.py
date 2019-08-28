@@ -27,7 +27,7 @@ class Simulation:
         return np.array([x, y, z, μ, φ])
 
     def __init__(self, initialstate, μstep=np.pi/18, dt=0.01, max_iterations=1000):
-        self.allstates = np.empty((len(initialstate, max_iterations+1)))
+        self.allstates = np.empty((max_iterations+1, len(initialstate)))
         self.allstates[0, :] = initialstate
         self.iteration = 0
         self.max_iterations = max_iterations
@@ -83,15 +83,21 @@ class Simulation:
             μ_new = μ + self.μstep
 
         v = 10
-        r = v**2 / (g*np.tan(μ_new))
+        
+
         l = v * self.dt
 
-        z_new = z - 0.5 * ρ * v**2 * drag(v, μ) * S * l / (m*g) + w*dt
+        z_new = z - 0.5 * ρ * v**2 * drag(v, μ) * S * l / (m*g) + w*self.dt
 
         x_new = x + l * np.cos(μ)
         y_new = y + l * np.sin(μ)
 
-        φ_new = φ + l/r
+        if μ_new!=0.0:
+            r = v**2 / (g*np.tan(μ_new))
+            φ_new = φ + l/r
+        else:
+            φ_new = φ
+
 
         self.state = x_new, y_new, z_new, μ_new, φ_new
         
