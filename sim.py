@@ -87,7 +87,10 @@ class Simulation:
 
         l = v * self.dt
 
-        z_new = z - 0.5 * ρ * v**2 * drag(v, μ) * S * l / (m*g) + w*self.dt
+        c_d = 0.03
+
+        z_new = z + w*self.dt - 0.5 * ρ * v**2 * c_d * S * l / (m*g)
+        #print(drag(v, μ))
 
         x_new = x + l * np.cos(μ)
         y_new = y + l * np.sin(μ)
@@ -117,8 +120,8 @@ class Simulation:
 
 
 def simple_thermal(x, y, z, *args, **kwargs):
-    if np.sqrt(x**2 + y**2) < 10:
-        return 1.0
+    if np.sqrt(x**2 + y**2) < 20:
+        return 2.0
     else:
         return 0.0
 

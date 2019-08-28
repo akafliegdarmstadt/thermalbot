@@ -27,7 +27,7 @@ class TableAgent:
     When used for indexing the Q-table it is discretized to be either
     rising, neutral or falling."""
 
-    def otos(observation):
+    def otos(self, observation):
         """Convert from observation to indices for our policy."""
         dte, bankangle = observation
 
@@ -36,11 +36,12 @@ class TableAgent:
             2 if dte > self.deadzone else 1
 
         bankangle = int(bankangle/5 + 9)
+        return dte, bankangle
 
-    def __init__(self, learning_rate=0.1, discount=0.5,
+    def __init__(self, learning_rate=0.9, discount=0.0,
             randomness=0.3, deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
-        self.policy = np.zeros((3,9,3))
+        self.policy = np.zeros((3,19,3))
         self.learning_rate = learning_rate
         self.discount = discount
         self.randomness = randomness
@@ -50,15 +51,15 @@ class TableAgent:
         if random.random() <= self.randomness:
             return random.choice([0,1,2])
 
-        dte, bankangle = otos(observation)
+        dte, bankangle = self.otos(observation)
 
 
         # If there is more than one maximum return a random one.
-        return random.choice(np.argmax(self.policy[dte, bankangle]))
+        return np.argmax(self.policy[dte, bankangle])
 
     def update(self, observation, action, reward, nextobservation):
-        dte, bankangle = otos(observation)
-        ndte, nbankangle = otos(nextobservation)
+        dte, bankangle = self.otos(observation)
+        ndte, nbankangle = self.otos(nextobservation)
 
         oldq = self.policy[dte, bankangle, action]
         learned = reward + self.discount * (
