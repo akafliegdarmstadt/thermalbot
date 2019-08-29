@@ -39,10 +39,10 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def main():
-    aagent = agent.TableAgent()
+    aagent = agent.SARSAAgent()
 
     rewards = []
-    numepochs = 1000
+    numepochs = 100
     
     for epoch in range(1,numepochs+1):
         print(f"Epoch {epoch} / {numepochs}")

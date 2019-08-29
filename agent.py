@@ -73,14 +73,12 @@ class TableAgent:
 class SARSAAgent:
     def otos(self, observation):
         """Convert from observation to indices for our policy."""
-        dte, bankangle = observation
+        x, y, z, bankangle, phi, dx, dy, dz, dbankangle, dphi = observation
+        
+        dy = int(np.round(dy*2))
+        bankangle = int(np.round(bankangle*18))
 
-        # Discretize dte
-        dte = 0 if dte < -self.deadzone else \
-            2 if dte > self.deadzone else 1
-
-        bankangle = int(bankangle/5 + 9)
-        return dte, bankangle
+        return dy, bankangle
 
     def __init__(self, learning_rate=0.9, discount=0.0,
             deadzone=0.1):
