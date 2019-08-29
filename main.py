@@ -1,4 +1,5 @@
 #! /bin/python
+import sys
 import agent
 import sim as simulation
 from matplotlib import pyplot as plt
@@ -7,17 +8,23 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colors as colors
 import numpy as np
 
+import cProfile, pstats, io # Profiling stuff
+
+def calc_reward(state, nextstate):
+    return state[7]*2 - 1
+
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([0, 0, 1000, 0, 0])
+    env = simulation.Simulation([-60, 0, 1000, 0, 0], dt=0.1)
     totalreward = 0
 
     action = 1
-    observation, reward, done = env.step(action)
+    observation, done = env.step(action)
     observations = [env.state]
 
-    for _ in range(1000):
+    for _ in range(300):
         action = agent.get_action(observation)
-        nextobservation, reward, done = env.step(action)
+        nextobservation, done = env.step(action)
+        reward = calc_reward(observation, nextobservation)
 
         totalreward += reward
 
@@ -34,11 +41,11 @@ def do_cycle(agent, return_observation=False):
     else:
         return totalreward
 
-def main():
-    aagent = agent.RandomAgent()
+def do_simulation(doplot=True):
+    aagent = agent.SARSAAgent(0.9, 0.9, 0.2)
 
     rewards = []
-    numepochs = 10
+    numepochs = 200
     
     for epoch in range(1,numepochs+1):
         print(f"Epoch {epoch} / {numepochs}")
@@ -54,9 +61,36 @@ def main():
 
     observations = np.array(observations)
     
-    hdiffs = np.diff(observations[:,2], prepend=0.0)*1000
+    hdiffs = np.diff(observations[:,2], prepend=0.0)
 
-    ax.scatter(observations[:,0], observations[:,1], observations[:,2], c=hdiffs, norm=colors.PowerNorm(1/2))
-    plt.show()
+    if doplot:
+        ax.scatter(observations[:,0], observations[:,1], observations[:,2],\
+                c=hdiffs)
+        plt.show()
+
+def do_profile():
+    pr = cProfile.Profile()
+    pr.enable()
+    do_simulation(doplot=False)
+    pr.disable()
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
+
+def main():
+    if len(sys.argv) > 1:
+        mode =  sys.argv[1]
+        if mode == "run":
+            do_simulation()
+        elif mode == "profile":
+            do_profile()
+        else:
+            print(f"Did not understand \"{mode}\".")
+            sys.exit(1)
+    else:
+        do_simulation()
+
 if __name__ == "__main__":
     main()
