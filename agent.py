@@ -73,35 +73,41 @@ class TableAgent:
 class SARSAAgent:
     def otos(self, observation):
         """Convert from observation to indices for our policy."""
-        x, y, z, bankangle, phi, dx, dy, dz, dbankangle, dphi = observation
+        x, y, z, bankangle, phi, dx, dy, dz, dbankangle, dphi, liftgradient = observation
         
         dy = int(np.round(dy*2))
         bankangle = int(np.round(bankangle*18))
 
-        return dy, bankangle
+        lg = 1
+        if liftgradient < -self.deadzone:
+            lg = 0
+        elif liftgradient > self.deadzone:
+            lg = 2
+
+        return dy, bankangle, lg
 
     def __init__(self, learning_rate=0.9, discount=0.0,
             deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
-        self.policy = np.zeros((3,19,3))
+        self.policy = np.zeros((3,19,3,3))
         self.learning_rate = learning_rate
         self.discount = discount
         self.deadzone = deadzone
 
     def get_action(self, observation):
-        dte, bankangle = self.otos(observation)
+        dte, bankangle, lg = self.otos(observation)
 
         # If there is more than one maximum return a random one.
-        return np.argmax(self.policy[dte, bankangle])
+        return np.argmax(self.policy[dte, bankangle, lg])
 
     def update(self, observation, action, reward, nextobservation):
-        dte, bankangle = self.otos(observation)
-        ndte, nbankangle = self.otos(nextobservation)
-
+        dy, bankangle, lg = self.otos(observation)
+        ndy, nbankangle, nlg = self.otos(nextobservation)
+        
         nextaction = self.get_action(nextobservation)
 
-        thisq = self.policy[dte, bankangle, action]
-        nextq = self.policy[ndte, nbankangle, nextaction]
+        thisq = self.policy[dy, bankangle, lg, action]
+        nextq = self.policy[ndy, nbankangle, nlg, nextaction]
 
-        self.policy[dte, bankangle, action] = \
+        self.policy[dy, bankangle, nlg, action] = \
                 thisq + self.learning_rate*(reward + nextq - thisq)

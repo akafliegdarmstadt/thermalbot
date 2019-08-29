@@ -82,7 +82,11 @@ class Simulation:
 
         done = self.iteration >= self.max_iterations
 
-        return self.full_state, done
+        b = 1.0
+        liftgradient = self.get_liftgradient(self.full_state)
+        observation = self.full_state + [liftgradient]
+
+        return observation, done
 
     def _do_step(self, action:int):
         
@@ -116,12 +120,22 @@ class Simulation:
 
         if μ_new!=0.0:
             r = v**2 / (g*np.tan(μ_new))
-            φ_new = φ + l/r
+            φ_new = (φ + l/r)%(2*np.pi)
         else:
             φ_new = φ
 
         self.state = x_new, y_new, z_new, μ_new, φ_new
-    
+
+    def get_liftgradient(self, state):
+        x0, y0, z = state[:3]
+        phi = state[4]
+
+        x1, y1 = x0 + np.sin(phi), y0 + np.cos(phi)
+
+        l0 = thermal(x0, y0, z)
+        l1 = thermal(x1, y1, z)
+
+        return l1-l0    
 
 def simple_thermal(x, y, z, *args, **kwargs):
     if np.sqrt(x**2 + y**2) < 20:
