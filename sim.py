@@ -94,11 +94,11 @@ class Simulation:
 
         # 
         if action == 0:
-            μ_new = μ - self.μstep
+            μ_new = np.clip(μ - self.μstep, -np.pi/2, np.pi/2)
         elif action == 1:
             μ_new = μ
         else:
-            μ_new = μ + self.μstep
+            μ_new = np.clip(μ + self.μstep, -np.pi/2, np.pi/2)
 
         v = self.v 
 
