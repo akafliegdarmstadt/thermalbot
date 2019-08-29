@@ -35,7 +35,7 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def main():
-    aagent = agent.RandomAgent()
+    aagent = agent.SARSAAgent()
 
     rewards = []
     numepochs = 10
