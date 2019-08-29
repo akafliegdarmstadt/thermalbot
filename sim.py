@@ -126,17 +126,19 @@ def simple_thermal(x, y, z, *args, **kwargs):
     else:
         return 0.0
 
-def thermal(x, y, z, thermal_pos=[0.0, 0.0], z_i=1213, w_star=1.97):
-    """Calculate thermal following Allen 2006"""
+
+
+def thermal(x, y, z, thermal_pos=[0.0, 0.0], z_i=1213.0, w_star=1.97):
+    """Calculate thermals following Allen 2006"""
 
     from numpy import abs
     if z>0.9*z_i:
         return 0.0
     else:
         r = np.sqrt((x-thermal_pos[0])**2 + (y-thermal_pos[1])**2)
-        w_mean = w_star * (z/z_i)**3 * (1 - 1.11 * (z/z_i))
-        r2 = np.max(10, 0.102 * (z/z_i)**(1/3) * (1-0.25*(z/z_i)) * z_i)
-        r1 = 0.8 if r2<600 else 0.0011*r2 + 0.14
+        w_mean = w_star * (z/z_i)**3 * (1.0 - 1.1 * (z/z_i))
+        r2 = np.max((10.0, 0.102 * (z/z_i)**(1/3) * (1-0.25*(z/z_i)) * z_i))
+        r1 = (0.8 if r2>600 else 0.0011*r2 + 0.14)*r2
         w_peak = 3 * w_mean * (r2**3 - r2**2*r1) / (r2**3 - r1**3)
 
         w_D = 0.0 # TODO: calculate
