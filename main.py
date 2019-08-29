@@ -39,7 +39,7 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def main():
-    aagent = agent.SARSAAgent()
+    aagent = agent.TableAgent()
 
     rewards = []
     numepochs = 100
@@ -58,9 +58,10 @@ def main():
 
     observations = np.array(observations)
     
-    hdiffs = np.diff(observations[:,2], prepend=0.0)*1000
+    hdiffs = np.diff(observations[:,2], prepend=0.0)
 
-    ax.scatter(observations[:,0], observations[:,1], observations[:,2], c=hdiffs, norm=colors.PowerNorm(1/2))
+    ax.scatter(observations[:,0], observations[:,1], observations[:,2], c=hdiffs)
     plt.show()
+
 if __name__ == "__main__":
     main()

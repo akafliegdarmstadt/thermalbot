@@ -36,14 +36,14 @@ class TableAgent:
 
         return dy, bankangle
 
-    def __init__(self, learning_rate=0.1, discount=0.2,
-            randomness=1, deadzone=0.1):
+    def __init__(self, learning_rate=0.1, discount=0.9,
+            randomness=0.3, deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
         self.policy = np.zeros((3,19,3))
         self.learning_rate = learning_rate
         self.discount = discount
         self.randomness = randomness
-        self.randomnessdecay = 0.9999
+        self.randomnessdecay = 1
         self.deadzone = deadzone
 
     def get_action(self, observation):

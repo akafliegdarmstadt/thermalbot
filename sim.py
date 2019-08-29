@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.interpolate import interp1d
 import numba
 
 
@@ -90,7 +91,7 @@ class Simulation:
         x, y, z, μ, φ = self.laststate
 
         # calculate thermal velocity
-        w = simple_thermal(x, y, z)
+        w = 10*thermal(x, y, z)
 
         # 
         if action == 0:
@@ -127,11 +128,9 @@ def simple_thermal(x, y, z, *args, **kwargs):
         return 0.0
 
 
-
 def thermal(x, y, z, thermal_pos=[0.0, 0.0], z_i=1213.0, w_star=1.97):
     """Calculate thermals following Allen 2006"""
 
-    from numpy import abs
     if z>0.9*z_i:
         return 0.0
     else:
@@ -144,13 +143,12 @@ def thermal(x, y, z, thermal_pos=[0.0, 0.0], z_i=1213.0, w_star=1.97):
         w_D = 0.0 # TODO: calculate
 
         k1, k2, k3, k4 = _get_ks(r1/r2)
-        w = w_peak * ( 1/(1+abs(k1*r/r2+k3)**k2) + k4 * r/r2 + w_D)
+        w = w_peak * ( 1/(1+np.abs(k1*r/r2+k3)**k2) + k4 * r/r2 + w_D)
 
         return w
 
 
 def _get_ks(rr):
-    from scipy.interpolate import interp1d
 
     rrs = np.array([0.14, 0.25, 0.36, 0.47, 0.58, 0.69, 0.80])
     ks = np.array([[1.5352, 2.5826, -0.0113, 0.0008],
