@@ -68,3 +68,42 @@ class TableAgent:
             self.learning_rate*learned
 
         self.randomness *= self.randomnessdecay
+
+
+class SARSAAgent:
+    def otos(self, observation):
+        """Convert from observation to indices for our policy."""
+        dte, bankangle = observation
+
+        # Discretize dte
+        dte = 0 if dte < -self.deadzone else \
+            2 if dte > self.deadzone else 1
+
+        bankangle = int(bankangle/5 + 9)
+        return dte, bankangle
+
+    def __init__(self, learning_rate=0.9, discount=0.0,
+            deadzone=0.1):
+        # Learning rate and discount factor are chosen quite randomly
+        self.policy = np.zeros((3,19,3))
+        self.learning_rate = learning_rate
+        self.discount = discount
+        self.deadzone = deadzone
+
+    def get_action(self, observation):
+        dte, bankangle = self.otos(observation)
+
+        # If there is more than one maximum return a random one.
+        return np.argmax(self.policy[dte, bankangle])
+
+    def update(self, observation, action, reward, nextobservation):
+        dte, bankangle = self.otos(observation)
+        ndte, nbankangle = self.otos(nextobservation)
+
+        nextaction = self.get_action(nextobservation)
+
+        thisq = self.policy[dte, bankangle, action]
+        nextq = self.policy[ndte, nbankangle, nextaction]
+
+        self.policy[dte, bankangle, action] = \
+                thisq + self.learning_rate*(reward + nextq - thisq)
