@@ -14,7 +14,7 @@ def calc_reward(state, nextstate):
     return state[7]*2 - 1
 
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([0, 0, 1000, 0, 0], dt=0.1)
+    env = simulation.Simulation([-20, 0, 1000, 0, 0], dt=0.1)
     totalreward = 0
 
     action = 1
@@ -42,10 +42,10 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(doplot=True):
-    aagent = agent.TableAgent()
+    aagent = agent.SARSAAgent(0.5, 0.9, 0.5)
 
     rewards = []
-    numepochs = 100
+    numepochs = 1000
     
     for epoch in range(1,numepochs+1):
         print(f"Epoch {epoch} / {numepochs}")

@@ -111,8 +111,8 @@ class Simulation:
 
         z_new = z + w*self.dt - 0.5 * ρ * v**2 * c_d * S * l / (m*g)
     
-        x_new = x + l * np.cos(μ)
-        y_new = y + l * np.sin(μ)
+        x_new = x + l * np.cos(φ)
+        y_new = y + l * np.sin(φ)
 
         if μ_new!=0.0:
             r = v**2 / (g*np.tan(μ_new))
