@@ -1,21 +1,24 @@
+from scipy.interpolate import interp1d
+from math import sqrt, sin, cos
 import numpy as np
+import numba
+
 
 def thermal(x, y, z, thermal_pos=[0.0, 0.0], z_i=1213.0, w_star=1.97):
     """Calculate thermals following Allen 2006"""
 
-    from numpy import abs
     if z>0.9*z_i:
         return 0.0
     else:
-        r = np.sqrt((x-thermal_pos[0])**2 + (y-thermal_pos[1])**2)
+        r = sqrt((x-thermal_pos[0])**2 + (y-thermal_pos[1])**2)
         w_mean = w_star * (z/z_i)**3 * (1.0 - 1.1 * (z/z_i))
-        r2 = np.max((10.0, 0.102 * (z/z_i)**(1/3) * (1-0.25*(z/z_i)) * z_i))
+        r2 = max((10.0, 0.102 * (z/z_i)**(1/3) * (1-0.25*(z/z_i)) * z_i))
         r1 = (0.8 if r2>600 else 0.0011*r2 + 0.14)*r2
         w_peak = 3 * w_mean * (r2**3 - r2**2*r1) / (r2**3 - r1**3)
 
         w_D = 0.0 # TODO: calculate
 
-        k1, k2, k3, k4 = _get_ks(r1/r2)
+        k1, k2, k3, k4 = _get_ks_faster(r1/r2)
         w = w_peak * ( 1/(1+abs(k1*r/r2+k3)**k2) + k4 * r/r2 + w_D)
 
         return w
@@ -31,6 +34,20 @@ ks = np.array([[1.5352, 2.5826, -0.0113, 0.0008],
                 [0.6189, 42.797, 0.7157, 0.0001]])
 
 def _get_ks(rr):
-    from scipy.interpolate import interp1d
-
     return interp1d(rrs, ks, kind='nearest', axis=0)(rr)
+
+@numba.jit
+def _get_ks_faster(rr):
+    
+    for i, ar in enumerate(rrs):
+        if ar < rr: break
+
+    if i == 0:
+        return ks[0, :]
+    elif i == ks.shape[1]:
+        return ks[-1, :]
+    else:
+        if (rr-ar)/(rrs[i+1]-rrs[i]) >= 0.5:
+            return ks[i+1, :]
+        else:
+            return ks[i, :]

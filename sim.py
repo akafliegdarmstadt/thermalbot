@@ -1,3 +1,4 @@
+from math import sin, cos, tan,  pi
 import numpy as np
 import numba
 
@@ -37,9 +38,9 @@ class Simulation:
         self.dt = dt
 
         self.v = 10
-        self.upper_bounds = [5000, 5000, 2000, np.pi/2, np.pi]
-        self.lower_bounds = [-5000, -5000, 0, -np.pi/2, -np.pi]
-        self.diff_upper_bounds = [self.v, self.v, self.v, μstep/dt, g*np.tan(μstep)*dt/self.v**2]
+        self.upper_bounds = [5000, 5000, 2000, pi/2, pi]
+        self.lower_bounds = [-5000, -5000, 0, -pi/2, -pi]
+        self.diff_upper_bounds = [self.v, self.v, self.v, μstep/dt, g*tan(μstep)*dt/self.v**2]
         self.diff_lower_bounds = -np.array(self.diff_upper_bounds)
 
 
@@ -64,9 +65,9 @@ class Simulation:
 
     @property
     def full_state(self):
-        norm_state = [np.interp(statevar, [self.lower_bounds[i], self.upper_bounds[i]], [0, 1]) for i, statevar in enumerate(self.state)]
+        norm_state = [_interp(statevar, self.lower_bounds[i], self.upper_bounds[i]) for i, statevar in enumerate(self.state)]
 
-        norm_dstate = [np.interp(statevar, [self.diff_lower_bounds[i], self.diff_upper_bounds[i]], [0, 1]) for i, statevar in enumerate(self.dstate)]
+        norm_dstate = [_interp(statevar, self.diff_lower_bounds[i], self.diff_upper_bounds[i]) for i, statevar in enumerate(self.dstate)]
 
         return norm_state + norm_dstate
 
@@ -115,12 +116,12 @@ class Simulation:
 
         z_new = z + w*self.dt - 0.5 * ρ * v**2 * c_d * S * l / (m*g)
     
-        x_new = x + l * np.cos(φ)
-        y_new = y + l * np.sin(φ)
+        x_new = x + l * cos(φ)
+        y_new = y + l * sin(φ)
 
         if μ_new!=0.0:
             r = v**2 / (g*np.tan(μ_new))
-            φ_new = (φ + l/r)%(2*np.pi)
+            φ_new = (φ + l/r)%(2*pi)
         else:
             φ_new = φ
 
@@ -130,12 +131,22 @@ class Simulation:
         x0, y0, z = state[:3]
         phi = state[4]
 
-        x1, y1 = x0 + np.sin(phi), y0 + np.cos(phi)
+        x1, y1 = x0 + sin(phi), y0 + cos(phi)
 
         l0 = thermal(x0, y0, z)
         l1 = thermal(x1, y1, z)
 
         return l1-l0    
+
+#@numba.jit
+def _interp(x, xp1, xp2, yp1=0, yp2=1):
+    if x < xp1:
+        return yp1
+    elif x > xp2:
+        return yp2
+
+    return (x-xp1)/(xp2-xp1) * (yp2-yp1)
+
 
 def simple_thermal(x, y, z, *args, **kwargs):
     if np.sqrt(x**2 + y**2) < 20:
