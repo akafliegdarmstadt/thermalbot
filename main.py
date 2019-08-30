@@ -14,7 +14,7 @@ def calc_reward(state, nextstate):
     return state[7]*2 - 1
 
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([-60, 0, 1000, 0, 0], dt=0.1)
+    env = simulation.Simulation([-30, 0, 1000, 0, 0], dt=0.1)
     totalreward = 0
 
     action = 1
@@ -55,18 +55,31 @@ def do_simulation(doplot=True):
     _, observations = do_cycle(aagent, True)
 
     plt.plot(range(1,numepochs+1), rewards)
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+
 
     observations = np.array(observations)
     
     hdiffs = np.diff(observations[:,2], prepend=0.0)
 
     if doplot:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
         ax.scatter(observations[:,0], observations[:,1], observations[:,2],\
                 c=hdiffs)
+
+        xs = np.linspace(observations[:,0].min(), observations[:,0].max())
+        ys = np.linspace(observations[:,1].min(), observations[:,1].max())
+        x_mg, y_mg = np.meshgrid(xs, ys)
+
+        w = np.vectorize(simulation.thermal)(x_mg, y_mg, 1000)
+
+        cset = ax.contour(x_mg, y_mg, w, zdir='z', offset=1000)
+
+        ax.set_zlim(990, 1010)
+
         plt.show()
+
 
 def do_profile():
     pr = cProfile.Profile()
@@ -79,7 +92,7 @@ def do_profile():
     ps.print_stats()
     print(s.getvalue())
 
-def main():
+def main(do_plot=True):
     if len(sys.argv) > 1:
         mode =  sys.argv[1]
         if mode == "run":
@@ -90,7 +103,7 @@ def main():
             print(f"Did not understand \"{mode}\".")
             sys.exit(1)
     else:
-        do_simulation()
+        do_simulation(do_plot)
 
 if __name__ == "__main__":
     main()
