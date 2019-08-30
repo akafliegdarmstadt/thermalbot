@@ -42,10 +42,10 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(doplot=True):
-    aagent = agent.SARSAAgent(0.2, 0.999, 0.2)
+    aagent = agent.SARSAAgent(0.01, 1.0-1e-6, 0.02)
 
     rewards = []
-    numepochs = 5000
+    numepochs = 3000
     
     for epoch in range(1,numepochs+1):
         print(f"Epoch {epoch} / {numepochs}")
@@ -65,12 +65,12 @@ def do_simulation(doplot=True):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
-        ax.scatter(observations[:,0], observations[:,1], observations[:,2],\
-                c=hdiffs)
+        ax.plot(observations[:,0], observations[:,1], observations[:,2])
 
-        xs = np.linspace(*ax.get_xlim())
-        ys = np.linspace(*ax.get_ylim())
-        x_mg, y_mg = np.meshgrid(xs, ys)
+        dist = max(np.abs([*ax.get_xlim(), *ax.get_ylim()]))
+
+        pts = np.linspace(-dist, dist)
+        x_mg, y_mg = np.meshgrid(pts, pts)
 
         w = np.vectorize(simulation.thermal)(x_mg, y_mg, 1000)
 
