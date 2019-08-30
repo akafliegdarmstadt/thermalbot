@@ -14,7 +14,7 @@ def calc_reward(state, nextstate):
     return state[7]*2 - 1
 
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([-30, 0, 1000, 0, 0], dt=0.1)
+    env = simulation.Simulation([-60, 0, 1000, 0, 0], dt=0.1)
     totalreward = 0
 
     action = 1
@@ -42,10 +42,10 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(doplot=True):
-    aagent = agent.SARSAAgent(0.9, 0.9, 0.2)
+    aagent = agent.SARSAAgent(0.2, 0.999, 0.2)
 
     rewards = []
-    numepochs = 200
+    numepochs = 5000
     
     for epoch in range(1,numepochs+1):
         print(f"Epoch {epoch} / {numepochs}")
@@ -68,15 +68,16 @@ def do_simulation(doplot=True):
         ax.scatter(observations[:,0], observations[:,1], observations[:,2],\
                 c=hdiffs)
 
-        xs = np.linspace(observations[:,0].min(), observations[:,0].max())
-        ys = np.linspace(observations[:,1].min(), observations[:,1].max())
+        xs = np.linspace(*ax.get_xlim())
+        ys = np.linspace(*ax.get_ylim())
         x_mg, y_mg = np.meshgrid(xs, ys)
 
         w = np.vectorize(simulation.thermal)(x_mg, y_mg, 1000)
 
+        zlim = ax.get_zlim()
         cset = ax.contour(x_mg, y_mg, w, zdir='z', offset=1000)
 
-        ax.set_zlim(990, 1010)
+        ax.set_zlim(*zlim)
 
         plt.show()
 

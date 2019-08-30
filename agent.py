@@ -110,4 +110,4 @@ class SARSAAgent:
         nextq = self.policy[ndy, nbankangle, nlg, nextaction]
 
         self.policy[dy, bankangle, nlg, action] = \
-                thisq + self.learning_rate*(reward + nextq - thisq)
+            thisq + self.learning_rate*(reward + self.discount*nextq - thisq)

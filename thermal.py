@@ -4,6 +4,7 @@ import numpy as np
 import numba
 
 
+#@numba.njit
 def thermal(x, y, z, thermal_pos=[0.0, 0.0], z_i=1213.0, w_star=1.97):
     """Calculate thermals following Allen 2006"""
 
