@@ -86,15 +86,19 @@ class SARSAAgent:
 
         return dy, bankangle, lg
 
-    def __init__(self, learning_rate=0.9, discount=0.0,
+    def __init__(self, learning_rate=0.9, discount=0.0, randomness=0.3,
             deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
-        self.policy = np.zeros((3,19,3,3))
+        self.policy = np.zeros((3,19,3))
         self.learning_rate = learning_rate
         self.discount = discount
         self.deadzone = deadzone
+        self.randomness = randomness
 
     def get_action(self, observation):
+        if random.random() <= self.randomness:
+            return random.choice([0,1,2])
+        
         dte, bankangle, lg = self.otos(observation)
 
         # If there is more than one maximum return a random one.
@@ -106,8 +110,8 @@ class SARSAAgent:
         
         nextaction = self.get_action(nextobservation)
 
-        thisq = self.policy[dy, bankangle, lg, action]
-        nextq = self.policy[ndy, nbankangle, nlg, nextaction]
+        thisq = self.policy[dy, bankangle, lg]
+        nextq = self.policy[ndy, nbankangle, nlg]
 
-        self.policy[dy, bankangle, nlg, action] = \
+        self.policy[dy, bankangle, lg] = \
             thisq + self.learning_rate*(reward + self.discount*nextq - thisq)
