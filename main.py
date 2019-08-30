@@ -42,7 +42,7 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(doplot=True):
-    aagent = agent.SARSAAgent(0.2, 0.999, 0.2)
+    aagent = agent.SARSAAgent(0.01, 1.0-1e-6, 0.02, 0.0)
 
     rewards = []
     numepochs = 5000

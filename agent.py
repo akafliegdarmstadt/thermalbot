@@ -86,7 +86,7 @@ class SARSAAgent:
 
         return dy, bankangle, lg
 
-    def __init__(self, learning_rate=0.9, discount=0.0, randomness=0.3
+    def __init__(self, learning_rate=0.9, discount=0.0, randomness=0.3,
             deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
         self.policy = np.zeros((3,19,3))
