@@ -6,14 +6,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colors as colors
-from env import SimpleEnvironment, thermal
+from environment import Environment, thermal
 
 
 def calc_reward(state, nextstate):
     return state[7]*2 - 1
 
 def do_cycle(agent, return_observation=False):
-    env = SimpleEnvironment([-60, 0, 1000, 0, 0], dt=0.1)
+    env = Environment([-60, 0, 1000, 10, 0, 0, 0.0])
     totalreward = 0
 
     action = 1
