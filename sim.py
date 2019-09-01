@@ -29,7 +29,7 @@ class Simulation:
         """
         return np.array([x, y, z, μ, φ])
 
-    def __init__(self, initialstate, μstep=np.pi/18, dt=0.01, max_iterations=1000):
+    def __init__(self, initialstate, μstep=(15*np.pi/360), dt=0.01, max_iterations=1000):
         self.allstates = np.empty((max_iterations+1, len(initialstate)))
         self.allstates[0, :] = initialstate
         self.iteration = 0
@@ -57,14 +57,17 @@ class Simulation:
     
     @state.setter
     def state(self, newstate):
+        """ Returns the current state. """
         self.allstates[self.iteration] = newstate
 
     @property
     def dstate(self):
+        """ Returns the gradient of the current state """
         return (self.state-self.laststate)/self.dt
 
     @property
     def full_state(self):
+        """ Returns the normalised state and the normalised dstate. """
         norm_state = [_interp(statevar, self.lower_bounds[i], self.upper_bounds[i]) for i, statevar in enumerate(self.state)]
 
         norm_dstate = [_interp(statevar, self.diff_lower_bounds[i], self.diff_upper_bounds[i]) for i, statevar in enumerate(self.dstate)]
@@ -77,6 +80,8 @@ class Simulation:
         action - 1: decrease bank angle, 2: hold bank angle, 3: increase bank angle
         bank angle is changed by μstep.
 
+        The observation has the full state first, then it's gradient an then the liftgradient.
+
         Returns obersvation, reward, done
         """
         self._do_step(action)
@@ -85,7 +90,8 @@ class Simulation:
 
         b = 1.0
         liftgradient = self.get_liftgradient(self.full_state)
-        observation = self.full_state + [liftgradient]
+
+        observation = np.concatenate([self.state, self.dstate, [liftgradient]])
 
         return observation, done
 
@@ -108,6 +114,7 @@ class Simulation:
         else:
             μ_new = μ + self.μstep
 
+        μ_new = np.clip(μ_new, np.deg2rad(-45), np.deg2rad(45))
         v = self.v 
 
         l = v * self.dt

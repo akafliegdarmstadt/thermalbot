@@ -29,23 +29,21 @@ class TableAgent:
 
     def otos(self, observation):
         """Convert from observation to indices for our policy."""
-        x, y, z, bankangle, phi, dx, dy, dz, dbankangle, dphi, liftgradient = observation
+        x, y, z, bankangle, phi, dx, dy, dz, dbankangle, dphi, lg = observation
         
-        dy = int(np.round(dy*2))
-        bankangle = int(np.round(bankangle*18))
+        dy = 2 if dy > self.deadzone else 0 if dy < self.deadzone else 1
+        lg = 2 if lg > self.deadzone else 0 if lg < self.deadzone else 1
+        
+        assert(bankangle >= np.deg2rad(-45) and bankangle <= np.deg2rad(45)) # Make sure bankangle is between -30 and +30 degrees
 
-        lg = 1
-        if liftgradient < -self.deadzone:
-            lg = 0
-        elif liftgradient > self.deadzone:
-            lg = 2
+        bankangle = int(np.round(bankangle/15) + 2)
 
         return dy, bankangle, lg
 
     def __init__(self, learning_rate=0.1, discount=0.9,
             randomness=0.3, decay=1, deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
-        self.policy = np.zeros((3,19,3,3))
+        self.policy = np.random.rand(3, 7, 3, 3)
         self.learning_rate = learning_rate
         self.discount = discount
         self.randomness = randomness
@@ -58,7 +56,6 @@ class TableAgent:
 
         dy, bankangle, lg = self.otos(observation)
 
-        # If there is more than one maximum return a random one.
         return np.argmax(self.policy[dy, bankangle, lg])
 
     def update(self, observation, action, reward, nextobservation):
@@ -74,7 +71,6 @@ class TableAgent:
             self.learning_rate*learned
 
         self.randomness *= self.randomnessdecay
-
 
 class SARSAAgent:
     def otos(self, observation):

@@ -10,16 +10,18 @@ import numpy as np
 
 import cProfile, pstats, io # Profiling stuff
 
+
 def calc_reward(state, nextstate):
-    return state[7]*2 - 1
+    return state[7]
 
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([-60, 0, 1000, 0, 0], dt=0.1)
+    env = simulation.Simulation([-20, 0, 1000, 0, np.deg2rad(45)],np.deg2rad(15), dt=0.1)
     totalreward = 0
 
     action = 1
     observation, done = env.step(action)
     observations = [env.state]
+
 
     for _ in range(300):
         action = agent.get_action(observation)
@@ -42,8 +44,7 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(numepochs, doplot=True):
-    aagent = agent.TableAgent(0.9, 0.1, 0.3, 1)
-
+    aagent = agent.TableAgent(0.9, 0.99, 1, 0.99999, 0.01)
 
     rewards = []
     
@@ -55,7 +56,6 @@ def do_simulation(numepochs, doplot=True):
     _, observations = do_cycle(aagent, True)
 
     plt.plot(range(1,numepochs+1), rewards)
-
 
     observations = np.array(observations)
     
@@ -104,7 +104,7 @@ def main(do_plot=True):
             print(f"Did not understand \"{mode}\".")
             sys.exit(1)
     else:
-        do_simulation(1000, do_plot)
+        do_simulation(5000, do_plot)
 
 if __name__ == "__main__":
     main()
