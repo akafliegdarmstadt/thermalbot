@@ -29,41 +29,47 @@ class TableAgent:
 
     def otos(self, observation):
         """Convert from observation to indices for our policy."""
-        x, y, z, bankangle, phi, dx, dy, dz, dbankangle, dphi = observation
+        x, y, z, bankangle, phi, dx, dy, dz, dbankangle, dphi, liftgradient = observation
         
         dy = int(np.round(dy*2))
         bankangle = int(np.round(bankangle*18))
 
-        return dy, bankangle
+        lg = 1
+        if liftgradient < -self.deadzone:
+            lg = 0
+        elif liftgradient > self.deadzone:
+            lg = 2
+
+        return dy, bankangle, lg
 
     def __init__(self, learning_rate=0.1, discount=0.9,
-            randomness=0.3, deadzone=0.1):
+            randomness=0.3, decay=1, deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
-        self.policy = np.zeros((3,19,3))
+        self.policy = np.zeros((3,19,3,3))
         self.learning_rate = learning_rate
         self.discount = discount
         self.randomness = randomness
-        self.randomnessdecay = 1
+        self.randomnessdecay = decay
         self.deadzone = deadzone
 
     def get_action(self, observation):
         if random.random() <= self.randomness:
             return random.choice([0,1,2])
 
-        dy, bankangle = self.otos(observation)
+        dy, bankangle, lg = self.otos(observation)
 
         # If there is more than one maximum return a random one.
-        return np.argmax(self.policy[dy, bankangle])
+        return np.argmax(self.policy[dy, bankangle, lg])
 
     def update(self, observation, action, reward, nextobservation):
-        dy, bankangle = self.otos(observation)
-        ndy, nbankangle = self.otos(nextobservation)
+        dy, bankangle, lg = self.otos(observation)
+        ndy, nbankangle, nlg = self.otos(nextobservation)
 
-        oldq = self.policy[dy, bankangle, action]
+        oldq = self.policy[dy, bankangle, lg, action]
         learned = reward + self.discount * (
-            np.max(self.policy[ndy, nbankangle]))
+            np.max(self.policy[ndy, nbankangle, nlg]))
 
-        self.policy[dy, bankangle, action] = \
+        self.policy[dy, bankangle, lg, action] = \
             (1-self.learning_rate)*oldq + \
             self.learning_rate*learned
 
@@ -89,7 +95,7 @@ class SARSAAgent:
     def __init__(self, learning_rate=0.9, discount=0.0, randomness=0.3,
             deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
-        self.policy = np.zeros((3,19,3))
+        self.policy = np.zeros((3,19,3,3))
         self.learning_rate = learning_rate
         self.discount = discount
         self.deadzone = deadzone
@@ -110,8 +116,8 @@ class SARSAAgent:
         
         nextaction = self.get_action(nextobservation)
 
-        thisq = self.policy[dy, bankangle, lg]
-        nextq = self.policy[ndy, nbankangle, nlg]
+        thisq = self.policy[dy, bankangle, lg, action]
+        nextq = self.policy[ndy, nbankangle, nlg, nextaction]
 
         self.policy[dy, bankangle, lg] = \
             thisq + self.learning_rate*(reward + self.discount*nextq - thisq)
