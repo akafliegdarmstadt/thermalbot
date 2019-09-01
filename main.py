@@ -41,12 +41,11 @@ def do_cycle(agent, return_observation=False):
     else:
         return totalreward
 
-def do_simulation(doplot=True):
-    aagent = agent.SARSAAgent(0.01, 1.0-1e-6, 0.02, 0.0)
+def do_simulation(numepochs, doplot=True):
+    aagent = agent.TableAgent(0.9, 0.1, 0.3, 1)
 
 
     rewards = []
-    numepochs = 3000
     
     for epoch in range(1,numepochs+1):
         print(f"Epoch {epoch} / {numepochs}")
@@ -98,14 +97,14 @@ def main(do_plot=True):
     if len(sys.argv) > 1:
         mode =  sys.argv[1]
         if mode == "run":
-            do_simulation()
+            do_simulation(1000)
         elif mode == "profile":
             do_profile()
         else:
             print(f"Did not understand \"{mode}\".")
             sys.exit(1)
     else:
-        do_simulation(do_plot)
+        do_simulation(1000, do_plot)
 
 if __name__ == "__main__":
     main()
