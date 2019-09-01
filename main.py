@@ -1,20 +1,19 @@
 #! /bin/python
 import sys
 import agent
-import sim as simulation
-from matplotlib import pyplot as plt
+import cProfile, pstats, io # Profiling stuff
+import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colors as colors
-import numpy as np
+from env import SimpleEnvironment, thermal
 
-import cProfile, pstats, io # Profiling stuff
 
 def calc_reward(state, nextstate):
     return state[7]*2 - 1
 
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([-60, 0, 1000, 0, 0], dt=0.1)
+    env = SimpleEnvironment([-60, 0, 1000, 0, 0], dt=0.1)
     totalreward = 0
 
     action = 1
@@ -42,16 +41,18 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(doplot=True):
-    aagent = agent.SARSAAgent(0.01, 1.0-1e-6, 0.02, 0.0)
+    aagent = agent.SARSAAgent(0.1, 0.9, 0.02, 0.2)
 
 
     rewards = []
-    numepochs = 3000
+    numepochs = 10000
     
     for epoch in range(1,numepochs+1):
-        print(f"Epoch {epoch} / {numepochs}")
+        
         reward = do_cycle(aagent)
         rewards.append(reward)
+
+        print(f"Epoch {epoch} / {numepochs} - reward: {reward}")
 
     _, observations = do_cycle(aagent, True)
 
@@ -59,8 +60,6 @@ def do_simulation(doplot=True):
 
 
     observations = np.array(observations)
-    
-    hdiffs = np.diff(observations[:,2], prepend=0.0)
 
     if doplot:
         fig = plt.figure()
@@ -73,10 +72,10 @@ def do_simulation(doplot=True):
         pts = np.linspace(-dist, dist)
         x_mg, y_mg = np.meshgrid(pts, pts)
 
-        w = np.vectorize(simulation.thermal)(x_mg, y_mg, 1000)
+        w = np.vectorize(thermal)(x_mg, y_mg, 1000)
 
         zlim = ax.get_zlim()
-        cset = ax.contour(x_mg, y_mg, w, zdir='z', offset=1000)
+        ax.contour(x_mg, y_mg, w, zdir='z', offset=1000)
 
         ax.set_zlim(*zlim)
 
