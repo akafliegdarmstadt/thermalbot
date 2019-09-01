@@ -22,15 +22,19 @@ class SimpleFDM:
 
     c_d = 0.03
 
-    def __init__(self, pos=[.0, .0, .0], v=10.0, dt=0.01, thermal=thermal):
-        self.pos = pos
-        self.v = v
+    def __init__(self, dt=0.01, thermal=thermal):
+        self.pos = [0, 0, 0]
+        self.v = 0
         self.μ = 0.0
         self.μstep = 5.0
         self.φ = 0.0
         self.time = 0.0
         self.dt = dt
         self.thermal = thermal
+
+    def set_initial(self, pos, v):
+        self.pos = pos
+        self.v = v
 
     def run(self, action:int):
         if action == 0:
@@ -72,8 +76,7 @@ class Environment:
         self.max_iterations = max_iterations
 
         self.fdm = fdm
-        # initiate
-        self.fdm.pos = initialstate[:3]
+        self.fdm.set_initial(initialstate[:4])
 
         # TODO: remove random choosen diff bounds
         self.upper_bounds = [5000, 5000, 2000.0, 100.0, pi/2, pi, 100]
