@@ -16,7 +16,7 @@ def calc_reward(state, nextstate):
     return state[7]
 
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([-20, 0, 500, 0, np.random.rand()*np.pi*2],np.deg2rad(15), dt=0.1)
+    env = simulation.Simulation([-100, 0, 500, 0, np.random.rand()*np.pi*2],np.deg2rad(15), dt=0.1)
     totalreward = 0
 
     action = 1
