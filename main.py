@@ -10,12 +10,13 @@ import numpy as np
 
 import cProfile, pstats, io # Profiling stuff
 
+import pickle
 
 def calc_reward(state, nextstate):
     return state[7]
 
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([-20, 0, 1000, 0, np.deg2rad(45)],np.deg2rad(15), dt=0.1)
+    env = simulation.Simulation([-20, 0, 500, 0, np.random.rand()*np.pi*2],np.deg2rad(15), dt=0.1)
     totalreward = 0
 
     action = 1
@@ -44,7 +45,7 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(numepochs, doplot=True):
-    aagent = agent.TableAgent(0.9, 0.99, 1, 0.99999, 0.01)
+    aagent = agent.TableAgent(0.1, 0.99, 1, 0.99999, 0.1)
 
     rewards = []
     
@@ -72,20 +73,22 @@ def do_simulation(numepochs, doplot=True):
         pts = np.linspace(-dist, dist)
         x_mg, y_mg = np.meshgrid(pts, pts)
 
-        w = np.vectorize(simulation.thermal)(x_mg, y_mg, 1000)
+        w = np.vectorize(simulation.thermal)(x_mg, y_mg, 500)
 
         zlim = ax.get_zlim()
-        cset = ax.contour(x_mg, y_mg, w, zdir='z', offset=1000)
+        cset = ax.contour(x_mg, y_mg, w, zdir='z', offset=500)
 
         ax.set_zlim(*zlim)
 
         plt.show()
 
+    return aagent.policy
+
 
 def do_profile():
     pr = cProfile.Profile()
     pr.enable()
-    do_simulation(doplot=False)
+    do_simulation(1000, doplot=False)
     pr.disable()
     s = io.StringIO()
     sortby = 'cumulative'
@@ -97,14 +100,15 @@ def main(do_plot=True):
     if len(sys.argv) > 1:
         mode =  sys.argv[1]
         if mode == "run":
-            do_simulation(1000)
+            policy = do_simulation(5000)
+            pickle.dump(policy, open('policy.p', 'wb'))
         elif mode == "profile":
             do_profile()
         else:
             print(f"Did not understand \"{mode}\".")
             sys.exit(1)
     else:
-        do_simulation(5000, do_plot)
+        do_simulation(1000, do_plot)
 
 if __name__ == "__main__":
     main()

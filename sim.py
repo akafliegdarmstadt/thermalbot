@@ -104,7 +104,7 @@ class Simulation:
         x, y, z, μ, φ = self.laststate
 
         # calculate thermal velocity
-        w = simple_thermal(x, y, z)
+        w = thermal(x, y, z)*10
 
         # 
         if action == 0:
