@@ -45,7 +45,7 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(numepochs, doplot=True):
-    aagent = agent.TableAgent(0.1, 0.999, 1, 0.99999, 0.1)
+    aagent = agent.TableAgent(0.5, 0.999, 1, 0.99999, 0.1)
 
     rewards = []
     
