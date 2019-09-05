@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import numba
 
 class RandomAgent:
     """A completely random soaring agent.
@@ -32,7 +33,7 @@ class TableAgent:
         x, y, z, bankangle, phi, dx, dy, dz, dbankangle, dphi, lg = observation
         
         dy = 2 if dy > self.deadzone else 0 if dy < self.deadzone else 1
-        lg = 2 if lg > self.deadzone else 0 if lg < self.deadzone else 1
+        lg = 0 if lg <= 0 else 1
         
         assert(bankangle >= np.deg2rad(-45) and bankangle <= np.deg2rad(45)) # Make sure bankangle is between -30 and +30 degrees
 
@@ -43,7 +44,7 @@ class TableAgent:
     def __init__(self, learning_rate=0.1, discount=0.9,
             randomness=0.3, decay=1, deadzone=0.1):
         # Learning rate and discount factor are chosen quite randomly
-        self.policy = np.random.rand(3, 7, 3, 3)
+        self.policy = np.random.rand(3, 7, 2, 3)
         self.learning_rate = learning_rate
         self.discount = discount
         self.randomness = randomness

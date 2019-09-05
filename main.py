@@ -13,10 +13,10 @@ import cProfile, pstats, io # Profiling stuff
 import pickle
 
 def calc_reward(state, nextstate):
-    return state[7]
+    return nextstate[7]
 
 def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([-100, 0, 500, 0, np.random.rand()*np.pi*2],np.deg2rad(15), dt=0.1)
+    env = simulation.Simulation([-100, 0, 500, 0, np.random.rand()*np.pi*2],np.deg2rad(15), dt=0.3)
     totalreward = 0
 
     action = 1
@@ -45,7 +45,7 @@ def do_cycle(agent, return_observation=False):
         return totalreward
 
 def do_simulation(numepochs, doplot=True):
-    aagent = agent.TableAgent(0.1, 0.99, 1, 0.99999, 0.1)
+    aagent = agent.TableAgent(0.1, 0.999, 1, 0.99999, 0.1)
 
     rewards = []
     
