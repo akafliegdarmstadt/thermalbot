@@ -6,15 +6,15 @@ class RandomAgent:
     """A completely random soaring agent.
     This is used to document the api for all agents."""
 
+    def __init__(self, env_shape):
+        self.observation_len, self.action_len = env_shape
+
     def get_action(self, observation):
         """Returns the action the agents intends to do
-        at the moment.
-        - 0: Decrease bank angle by five degrees.
-        - 1: Do nothing.
-        - 2: Increase bank angle by five degrees."""
-        return random.choice([0,1,2])
+        at the moment."""
+        return random.randint(action_len)
 
-    def update(self, observation, action, reward, nextobservation):
+    def update(self, observation, reward):
         """Does nothing, because this model doesn't learn."""
         pass
 

@@ -103,7 +103,7 @@ def main(do_plot=True):
             print(f"Did not understand \"{mode}\".")
             sys.exit(1)
     else:
-        do_simulation(1000, agent.TableAgent, environment.SimpleEnvironment, do_plot)
+        do_simulation(1000, agent.RandomAgent, environment.SimpleEnvironment, do_plot)
 
 if __name__ == "__main__":
     main()
