@@ -12,22 +12,17 @@ import cProfile, pstats, io # Profiling stuff
 
 import pickle
 
-def calc_reward(state, nextstate):
-    return nextstate[7]
-
-def do_cycle(agent, return_observation=False):
-    env = simulation.Simulation([-100, 0, 500, 0, np.random.rand()*np.pi*2],np.deg2rad(15), dt=0.3)
+def do_cycle(agent, envclass, return_observation=False):
+    env = envclass()
     totalreward = 0
 
     action = 1
     observation, done = env.step(action)
     observations = [env.state]
-
-
     for _ in range(300):
         action = agent.get_action(observation)
         nextobservation, done = env.step(action)
-        reward = calc_reward(observation, nextobservation)
+        reward = env.reward
 
         totalreward += reward
 
@@ -44,14 +39,14 @@ def do_cycle(agent, return_observation=False):
     else:
         return totalreward
 
-def do_simulation(numepochs, doplot=True):
-    aagent = agent.TableAgent(0.5, 0.999, 1, 0.99999, 0.1)
+def do_simulation(numepochs, agentclass, envclass, doplot=True):
+    aagent = agentclass((envclass.observation_length, envclass.action_length))
 
     rewards = []
     
     for epoch in range(1,numepochs+1):
         print(f"Epoch {epoch} / {numepochs}")
-        reward = do_cycle(aagent)
+        reward = do_cycle(aagent, envclass)
         rewards.append(reward)
 
     _, observations = do_cycle(aagent, True)
@@ -108,7 +103,7 @@ def main(do_plot=True):
             print(f"Did not understand \"{mode}\".")
             sys.exit(1)
     else:
-        do_simulation(1000, do_plot)
+        do_simulation(1000, agent.TableAgent, environment.SimpleEnvironment, do_plot)
 
 if __name__ == "__main__":
     main()
