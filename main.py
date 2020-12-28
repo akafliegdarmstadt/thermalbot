@@ -1,4 +1,5 @@
-#! /bin/python
+#! /usr/bin/env python3
+
 import sys
 import agent
 import sim as simulation
@@ -54,9 +55,11 @@ def do_simulation(numepochs, doplot=True):
     rewards = []
 
     for epoch in range(1, numepochs + 1):
-        print(f"Epoch {epoch} / {numepochs}")
+        print(f"\rEpoch {epoch} / {numepochs}", end="")
         reward = do_cycle(aagent)
         rewards.append(reward)
+
+    print()
 
     _, observations = do_cycle(aagent, True)
 
