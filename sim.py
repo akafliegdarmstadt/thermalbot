@@ -1,6 +1,5 @@
 from math import sin, cos, tan, pi
 import numpy as np
-import numba
 
 from thermal import thermal
 
@@ -159,7 +158,6 @@ class Simulation:
         return l1 - l0
 
 
-# @numba.jit
 def _interp(x, xp1, xp2, yp1=0, yp2=1):
     if x < xp1:
         return yp1

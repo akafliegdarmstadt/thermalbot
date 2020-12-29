@@ -1,10 +1,8 @@
 from scipy.interpolate import interp1d
 from math import sqrt, sin, cos
 import numpy as np
-import numba
 
 
-# @numba.njit
 def thermal(x, y, z, thermal_pos=[0.0, 0.0], z_i=1213.0, w_star=1.97):
     """Calculate thermals following Allen 2006"""
 
@@ -43,7 +41,6 @@ def _get_ks(rr):
     return interp1d(rrs, ks, kind="nearest", axis=0)(rr)
 
 
-@numba.jit
 def _get_ks_faster(rr):
 
     for i, ar in enumerate(rrs):
